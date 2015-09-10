@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" ng-app="SamplePage">
   <head>
 
     <!-- Required meta tags -->
@@ -8,7 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- Page title tag -->
-    <title>Traveler Points</title>
+    <title>Grand Tour Placeholder Page</title>
 
     <!-- Fonts -->
     <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
@@ -16,7 +16,6 @@
     <!-- Library stylesheets -->
     <link href="css/lib/bootstrap.min.css" rel="stylesheet">
     <link href="css/lib/bootstrap-theme.min.css" rel="stylesheet">
-    <link href="css/lib/leaflet.css" rel="stylesheet">
 
     <!-- Custom stylesheets -->
     <link href="css/styles.css" rel="stylesheet">
@@ -25,46 +24,79 @@
 
   <body>
 
-    <div id="wrapper">
+  <div class="container" ng-controller="SamplePageController">
 
-      <h1>Traveler Points</h1>
+    <h1>Sample Page</h1>
 
-      <hr>
+    <hr>
 
-      <!-- Traveler ID entry form -->
-      <form>
-        <div class="form-group">
-          <label for="traveler-id">Enter a traveler ID between 0 and 5293</label>
-          <input id="traveler-id" class="form-control" type="text" placeholder="12">
-        </div>
-        <button class="btn btn-primary" type="submit">Plot Traveler Points</button>
-      </form>
-
-      <hr>
-
-      <!-- Search Result Display -->
-      <div id="traveler-start" class="alert alert-info">No Traveler Selected</div>
-      <div id="traveler-info" class="alert alert-success hidden">
-        <strong>Traveler:</strong>
-        <span id="traveler-name"></span>
+    <!-- Traveler ID entry form -->
+    <form>
+      <div class="form-group">
+        <label for="traveler-id">Enter a traveler ID between 0 and 5293</label>
+        <input id="traveler-id" class="form-control" type="text" placeholder="{{ placeholder }}" ng-model="travelerID">
       </div>
-      <div id="traveler-warning" class="alert alert-warning hidden">
-        <strong>Input Error!</strong>
-      </div>
-      <div id="map"></div>
+      <button class="btn btn-primary" type="submit" ng-click="getTraveler(travelerID)">Explore Traveler</button>
+    </form>
 
-      <hr>
+    <hr>
+
+    <h2 id="full-name">{{ fullName }}</h2>
+
+    <div class="col-lg-3" id="left-column-box"><div class="placeholder-box"></div></div>
+    <div class="col-lg-6" id="middle-column-box"><div class="placeholder-box"></div></div>
+    <div class="col-lg-3" id="right-column-box">
+
+    <traveler-points-mini-map></traveler-points-mini-map>
+
+      <table class="table">
+
+        <thead>
+          <tr>
+            <th>Place</th>
+            <!--th.text-right after-->
+            <th class="text-right">from</th>
+            <th class="text-right">to</th>
+            <!--th.text-right before-->
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr ng-repeat="travel in miniMapShared.travels" ng-mouseenter="travel.hovered = true;" ng-mouseleave="travel.hovered = false" ng-click="travel.clicked = !travel.clicked;" ng-class="{ 'minimap-clicked': travel.clicked, 'minimap-hovered': travel.hovered }">
+            <td>
+              <span>{{ travel.place }}<span>
+            </td>
+            <td class="text-right">
+              <span ng-show="travel.travelStartYear == '0'">-</span>
+              <span ng-show="travel.travelStartYear != '0'">{{ travel.travelStartYear }}</span>
+              <span ng-show="travel.travelStartMonth != '0'">/{{ travel.travelStartMonth }}</span>
+              <span ng-show="travel.travelStartDay != '0'">/{{ travel.travelStartDay }}</span>
+            </td>
+            <td class="text-right">
+              <span ng-show="travel.travelEndYear == '0'">-</span>
+              <span ng-show="travel.travelEndYear != '0'">{{ travel.travelEndYear }}</span>
+              <span ng-show="travel.travelEndMonth != '0'">/{{ travel.travelEndMonth }}</span>
+              <span ng-show="travel.travelEndDay != '0'">/{{ travel.travelEndDay }}</span>
+            </td>
+          </tr>
+        </tbody>
+
+      </table>
 
     </div>
 
+  </div>
+
+
     <!-- Library scripts: jQuery, Bootstrap, D3, Leaflet -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="js/lib/angular.js"></script>
     <script src="js/lib/bootstrap.min.js"></script>
     <script src="js/lib/d3.min.js"></script>
-    <script src="js/lib/leaflet.js"></script>
 
     <!-- Custom scripts -->
     <script src="js/main.js"></script>
+    <script src="js/travelerPointsMiniMap.js"></script>
 
   </body>
 </html>

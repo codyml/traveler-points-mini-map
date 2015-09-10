@@ -1,39 +1,50 @@
-body {
-    margin: 50px;
-    margin-bottom: 0px;
+.container {
+
+    padding-top: 25px;
+
 }
 
-form {
-    width: 300px;
+#left-column-box {
+
+    height: 300px;
+
 }
 
-#map {
+#middle-column-box {
+
     height: 500px;
-    border: solid 1px #bbb;
+
 }
 
-.hidden {
-    display: none;
+#right-column-box {
+
+    height: 200px;
+
 }
 
-path {
-    fill: none;
-    stroke: #bbb;
+.placeholder-box {
+
+    background-color: #eee;
+    height: 100%;
+    margin-left: -5px;
+    margin-right: -5px;
+
 }
 
-circle {
-    fill: #000;
+span.ng-binding {
+    margin-left: -4px;
 }
 
-text {
-    font-family: 'Open Sans', sans-serif;
+#full-name {
+
+    margin-bottom: 20px;
+
 }
 
-text.clicked {
-    fill: #888;
-    font-weight: bold;
+.minimap-clicked {
+    background-color: #faa;
 }
 
-text:not(.clicked) {
-    fill: #000;
+.minimap-hovered {
+    background-color: #fee;
 }
