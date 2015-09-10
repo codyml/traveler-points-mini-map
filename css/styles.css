@@ -1,0 +1,39 @@
+body {
+    margin: 50px;
+    margin-bottom: 0px;
+}
+
+form {
+    width: 300px;
+}
+
+#map {
+    height: 500px;
+    border: solid 1px #bbb;
+}
+
+.hidden {
+    display: none;
+}
+
+path {
+    fill: none;
+    stroke: #bbb;
+}
+
+circle {
+    fill: #000;
+}
+
+text {
+    font-family: 'Open Sans', sans-serif;
+}
+
+text.clicked {
+    fill: #888;
+    font-weight: bold;
+}
+
+text:not(.clicked) {
+    fill: #000;
+}

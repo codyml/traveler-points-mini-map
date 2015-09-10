@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Page title tag -->
+    <title>Traveler Points</title>
+
+    <!-- Fonts -->
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+
+    <!-- Library stylesheets -->
+    <link href="css/lib/bootstrap.min.css" rel="stylesheet">
+    <link href="css/lib/bootstrap-theme.min.css" rel="stylesheet">
+    <link href="css/lib/leaflet.css" rel="stylesheet">
+
+    <!-- Custom stylesheets -->
+    <link href="css/styles.css" rel="stylesheet">
+
+  </head>
+
+  <body>
+
+    <div id="wrapper">
+
+      <h1>Traveler Points</h1>
+
+      <hr>
+
+      <!-- Traveler ID entry form -->
+      <form>
+        <div class="form-group">
+          <label for="traveler-id">Enter a traveler ID between 0 and 5293</label>
+          <input id="traveler-id" class="form-control" type="text" placeholder="12">
+        </div>
+        <button class="btn btn-primary" type="submit">Plot Traveler Points</button>
+      </form>
+
+      <hr>
+
+      <!-- Search Result Display -->
+      <div id="traveler-start" class="alert alert-info">No Traveler Selected</div>
+      <div id="traveler-info" class="alert alert-success hidden">
+        <strong>Traveler:</strong>
+        <span id="traveler-name"></span>
+      </div>
+      <div id="traveler-warning" class="alert alert-warning hidden">
+        <strong>Input Error!</strong>
+      </div>
+      <div id="map"></div>
+
+      <hr>
+
+    </div>
+
+    <!-- Library scripts: jQuery, Bootstrap, D3, Leaflet -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="js/lib/bootstrap.min.js"></script>
+    <script src="js/lib/d3.min.js"></script>
+    <script src="js/lib/leaflet.js"></script>
+
+    <!-- Custom scripts -->
+    <script src="js/main.js"></script>
+
+  </body>
+</html>
