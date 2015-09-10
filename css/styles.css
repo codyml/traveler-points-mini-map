@@ -31,20 +31,47 @@
 
 }
 
+.container-box {
+
+    margin-left: -5px;
+    margin-right: -5px;
+
+}
+
 span.ng-binding {
+
     margin-left: -4px;
+
 }
 
 #full-name {
 
     margin-bottom: 20px;
+    margin-left: 10px;
 
 }
 
 .minimap-clicked {
-    background-color: #faa;
+
+    background-color: #ccf;
+
 }
 
 .minimap-hovered {
-    background-color: #fee;
+
+    background-color: #ccc;
+
+}
+
+.minimap-clicked.minimap-hovered {
+
+    background-color: #bbc;
+
+}
+
+path {
+
+    fill: none;
+    stroke: #bbb;
+
 }

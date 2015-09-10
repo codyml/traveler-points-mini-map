@@ -19,25 +19,23 @@
             //  executed when the Explore Traveler button is clicked
             $http.get(API_URL + travelerID).then(function(response) {
 
-                console.log(response.data.entry);
-
-                //  expose the full name of the traveler
+                //  expose the full name of the traveler to the sample site
                 $scope.fullName = response.data.entry.fullName;
                 $scope.travels = response.data.entry.travels;
-
 
                 //  send the list of travels to the shared data service
                 MiniMapService.miniMapShared.travels = (response.data.entry.travels);
 
-                $scope.placeholder = $scope.travelerID;
-                $scope.travelerID = '';
-
+                $scope.placeholder = travelerID;
 
             }).catch(function() {
 
                 alert('There was an error!');
 
             });
+
+            $scope.placeholder = 'Loading...';
+            $scope.travelerID = '';
 
         };
 
