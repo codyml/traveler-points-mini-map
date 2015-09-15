@@ -10,7 +10,7 @@
 
     //  the controller for the sample page; exchanges point selection data with
     //  the TravelerPointsMini selection controller
-    module.controller('SamplePageController', function($scope, $http, MiniMapService) {
+    module.controller('SamplePageController', function($scope, $http, $compile, $log, MiniMapService) {
 
         var API_URL = 'https://grandtour.herokuapp.com/api/entries/';
 
@@ -28,9 +28,16 @@
 
                 $scope.placeholder = travelerID;
 
+                var directiveHTML = '<traveler-points-mini-map></traveler-points-mini-map>';
+                var miniMapElement = $compile(directiveHTML)($scope);
+
+                var wrapperElement = angular.element(document.getElementById('minimap'));
+                wrapperElement.append(miniMapElement);
+
+
             }).catch(function() {
 
-                alert('There was an error!');
+                alert('There was an error loading traveler information!');
 
             });
 
@@ -40,6 +47,17 @@
         };
 
         $scope.miniMapShared = MiniMapService.miniMapShared;
+
+        // $scope.$watch('miniMapShared', function(newValue) {
+
+        //     if ($scope.miniMapShared.travels) for (var i = 0; i < $scope.miniMapShared.travels.length; i++) {
+
+        //         var hovered = $scope.miniMapShared.travels[i].hovered;
+        //         console.log('from samplepage: travel ' + i + ' ' + (hovered ? 'hovered' : 'unhovered'));
+
+        //     }
+
+        // }, true);
 
     });
 

@@ -53,15 +53,7 @@
             restrict: 'E',
             link: function(scope, element, attrs) {
 
-                scope.$watch('miniMapShared.travels', function() {
-
-                    if (scope.fullName) {
-
-                        setupVisualization(element[0], scope);
-
-                    }
-
-                });
+                setupVisualization(element[0], scope);
 
                 setTimeout(function() {
 
@@ -69,9 +61,17 @@
 
                         if (scope.fullName) refreshVisualization();
 
+                        // if (scope.miniMapShared.travels) for (var i = 0; i < scope.miniMapShared.travels.length; i++) {
+
+                        //     var hovered = scope.miniMapShared.travels[i].hovered;
+                        //     console.log('from minimap: travel ' + i + ' ' + (hovered ? 'hovered' : 'unhovered'));
+
+                        // }
+
                     }, true);
 
-                }, 10000);
+                }, 0);
+
             },
 
         };
@@ -83,19 +83,18 @@
 
     //  Constants
     var MAP_HEIGHT = 250;
+    var MAP_WIDTH = 265;    //  used
     var BASEMAP_CENTER = [12.75, 42.05];
     var BASEMAP_SCALE = 1000;
 
     //  Instance variables
-    var svg_width, svg_height, canvas, projection, points;
+    var canvas, projection, points;
 
 
     //  sets up the visualization canvas
     function setupVisualization(element, scope) {
 
-        svg_width = element.parentElement.clientWidth;
-        svg_height = MAP_HEIGHT;
-        canvas = d3.select(element).append('svg').attr('width', svg_width).attr('height', svg_height);
+        canvas = d3.select(element).append('svg').attr('width', MAP_WIDTH).attr('height', MAP_HEIGHT);
 
         setupBasemap();
         drawPoints(scope);
@@ -110,7 +109,7 @@
         projection = d3.geo.mercator()
             .center(BASEMAP_CENTER)
             .scale(BASEMAP_SCALE)
-            .translate([svg_width / 2, svg_height / 2]);
+            .translate([MAP_WIDTH / 2, MAP_HEIGHT / 2]);
 
         var path = d3.geo.path().projection(projection);
 
@@ -160,7 +159,7 @@
 
     var CLICKED_COLOR = '#88f';
     var UNCLICKED_COLOR = '#888';
-    var ANIMATION_DELAY = 250;
+    var ANIMATION_DELAY = 150;
 
     //  Instance variables
     var totalStayLengths;
@@ -178,6 +177,7 @@
         //  create an array of unique travel travels
         uniqueDestinations = findUniqueDestinations(travels);
 
+
         //  reduce stayLengths to a total
         totalStayLengths = uniqueDestinations.reduce(function(accum, next) {
 
@@ -185,10 +185,12 @@
 
         }, 0);
 
+
         //  calculate the point scale
         pointScale = d3.scale.linear()
         .domain([0, totalStayLengths])
         .range([MIN_POINT_RADIUS, MAX_POINT_RADIUS]);
+
 
         //  create point elements
         points = canvas.selectAll('circle')
@@ -201,14 +203,16 @@
         .style('stroke', UNCLICKED_COLOR)
         .style('fill', UNCLICKED_COLOR);
 
-        //  perform initial point animation
+        console.log(points);
 
+        //  perform initial point animation
         points.transition()
         .attr('r', MAX_POINT_RADIUS)
         .delay(function(d, i) { return ANIMATION_DELAY * i * 2; })
         .transition()
         .attr('r', function(d) { return pointScale(d.stayLength); })
         .delay(function(d, i) { return ANIMATION_DELAY * (i + 1) * 2; });
+
 
         //  update the visualization and shared data service on point click
         points.on('click', function(d, i) {
@@ -228,8 +232,11 @@
 
         });
 
+
         //  update the visualization and the shared data service on hover
         points.on('mouseenter', function(d, i) {
+
+            d.hovered = true;
 
             for (var i = 0; i < d.sourceTravels.length; i++) {
 
@@ -245,6 +252,8 @@
         //  update the visualization and the shared data service on hover end
         points.on('mouseleave', function(d, i) {
 
+            d.hovered = false;
+
             for (var i = 0; i < d.sourceTravels.length; i++) {
 
                 d.sourceTravels[i].hovered = false;
@@ -257,9 +266,56 @@
         });
     };
 
+
+    /*
+    *   Function: refreshVisualization
+    *   ------------------------------
+    *   Called when an element is rolled over or clicked on in the travel list
+    *   to refresh the D3 visualization.
+    */
+    function refreshVisualization() {
+
+        points.each(function(d, i) {
+
+            var hovered = false;
+            var clicked = false;
+
+            for (var j = 0; j < d.sourceTravels.length; j++) {
+
+                var travel = d.sourceTravels[j];
+
+                if (travel.hovered) hovered = true;
+
+                if (travel.clicked) clicked = true;
+            }
+
+            if (hovered !== d.hovered) {
+
+                d.hovered = hovered;
+                if (hovered) hoverOn(d3.select(this));
+                else hoverOff(d3.select(this));
+
+                console.log(i + ' ' + (hovered ? 'hovered' : 'unhovered'));
+
+            }
+
+            if (clicked !== d.clicked) {
+
+                d.clicked = clicked;
+                if (clicked) clickOn(d3.select(this))
+                else clickOff(d3.select(this));
+
+            }
+
+        });
+
+    };
+
+
     //  restyles a point to the hovered state
     function hoverOn(selection) {
 
+        console.log('hover effect triggered', selection);
         selection.transition()
         .attr('r', MAX_POINT_RADIUS);
 
@@ -268,6 +324,7 @@
     //  restyles a point to the non-hovered state
     function hoverOff(selection) {
 
+        console.log('unhover effect triggered', selection);
         selection.transition()
         .attr('r', function(d, i) { return pointScale(d.stayLength); });
 
@@ -288,40 +345,6 @@
         selection.transition()
         .style('fill', UNCLICKED_COLOR)
         .style('stroke', UNCLICKED_COLOR);
-
-    };
-
-
-    /*
-    *   Function: refreshVisualization
-    *   ------------------------------
-    *   Called when an element is rolled over or clicked on in the travel list
-    *   to refresh the D3 visualization.
-    */
-    function refreshVisualization() {
-
-        console.log(points);
-
-        points.each(function(d) {
-
-            var hovered = false;
-            var clicked = false;
-
-            for (var j = 0; j < d.sourceTravels.length; j++) {
-
-                var travel = d.sourceTravels[j];
-
-                if (travel.hovered) hovered = true;
-
-                if (travel.clicked) clicked = true;
-            }
-
-            if (hovered) hoverOn(d3.select(this))
-            else hoverOff(d3.select(this));
-
-            if (clicked) clickOn(d3.select(this))
-            else clickOff(d3.select(this));
-        });
 
     };
 

@@ -22,6 +22,10 @@
 
 }
 
+#minimap {
+    width: 100%;
+}
+
 .placeholder-box {
 
     background-color: #eee;
