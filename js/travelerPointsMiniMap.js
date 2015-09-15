@@ -88,7 +88,7 @@
     var BASEMAP_SCALE = 1000;
 
     //  Instance variables
-    var canvas, projection, points;
+    var canvas, projection;
 
 
     //  sets up the visualization canvas
@@ -151,6 +151,7 @@
     //  Constants
     var MIN_POINT_RADIUS = 1;
     var MAX_POINT_RADIUS = 15;
+    var TARGET_RADIUS = 15;
     var ONE_DAY_MS = 1000 * 60 * 60 * 24;
 
     //  This value was calculated by averaging the length of every traveler's
@@ -162,9 +163,8 @@
     var ANIMATION_DELAY = 150;
 
     //  Instance variables
-    var totalStayLengths;
-    var uniqueDestinations;
-    var pointScale;
+    var totalStayLengths, uniqueDestinations, pointScale, points, targets;
+
 
     /*
     *   Function: drawDestinationPoints
@@ -193,35 +193,49 @@
 
 
         //  create point elements
-        points = canvas.selectAll('circle')
+        points = canvas.selectAll('circle .point')
         .data(uniqueDestinations)
         .enter()
         .append('circle')
+        .classed('point', true)
         .attr('cx', function(d) { return d.xy[0]; })
         .attr('cy', function(d) { return d.xy[1]; })
         .attr('r', 0)
         .style('stroke', UNCLICKED_COLOR)
-        .style('fill', UNCLICKED_COLOR);
+        .style('fill', UNCLICKED_COLOR)
 
-        console.log(points);
+        //  create point hover and click targets
+        targets = canvas.selectAll('circle .target')
+        .data(uniqueDestinations)
+        .enter()
+        .append('circle')
+        .classed('target', true)
+        .attr('cx', function(d) { return d.xy[0]; })
+        .attr('cy', function(d) { return d.xy[1]; })
+        .attr('r', TARGET_RADIUS)
+        .style('stroke', 'none')
+        .style('fill', 'none');
 
-        //  perform initial point animation
-        points.transition()
-        .attr('r', MAX_POINT_RADIUS)
-        .delay(function(d, i) { return ANIMATION_DELAY * i * 2; })
-        .transition()
-        .attr('r', function(d) { return pointScale(d.stayLength); })
-        .delay(function(d, i) { return ANIMATION_DELAY * (i + 1) * 2; });
+
+        // //  perform initial point animation
+        // points.transition()
+        // .attr('r', MAX_POINT_RADIUS)
+        // .delay(function(d, i) { return ANIMATION_DELAY * i * 2; })
+        // .transition()
+        // .attr('r', function(d) { return pointScale(d.stayLength); })
+        // .delay(function(d, i) { return ANIMATION_DELAY * (i + 1) * 2; });
 
 
         //  update the visualization and shared data service on point click
-        points.on('click', function(d, i) {
+        targets.on('click', function(_, i) {
+
+            var d = travels[i];
 
             d.clicked = !d.clicked;
 
-            for (var i = 0; i < d.sourceTravels.length; i++) {
+            for (var j = 0; j < d.sourceTravels.length; j++) {
 
-                d.sourceTravels[i].clicked = d.clicked;
+                d.sourceTravels[j].clicked = d.clicked;
 
             };
 
@@ -234,13 +248,15 @@
 
 
         //  update the visualization and the shared data service on hover
-        points.on('mouseenter', function(d, i) {
+        targets.on('mouseenter', function(_, i) {
+
+            var d = travels[i];
 
             d.hovered = true;
 
-            for (var i = 0; i < d.sourceTravels.length; i++) {
+            for (var j = 0; j < d.sourceTravels.length; j++) {
 
-                d.sourceTravels[i].hovered = true;
+                d.sourceTravels[j].hovered = true;
 
             };
 
@@ -250,13 +266,15 @@
         });
 
         //  update the visualization and the shared data service on hover end
-        points.on('mouseleave', function(d, i) {
+        targets.on('mouseleave', function(_, i) {
+
+            var d = travels[i];
 
             d.hovered = false;
 
-            for (var i = 0; i < d.sourceTravels.length; i++) {
+            for (var j = 0; j < d.sourceTravels.length; j++) {
 
-                d.sourceTravels[i].hovered = false;
+                d.sourceTravels[j].hovered = false;
 
             };
 
@@ -295,8 +313,6 @@
                 if (hovered) hoverOn(d3.select(this));
                 else hoverOff(d3.select(this));
 
-                console.log(i + ' ' + (hovered ? 'hovered' : 'unhovered'));
-
             }
 
             if (clicked !== d.clicked) {
@@ -315,7 +331,6 @@
     //  restyles a point to the hovered state
     function hoverOn(selection) {
 
-        console.log('hover effect triggered', selection);
         selection.transition()
         .attr('r', MAX_POINT_RADIUS);
 
@@ -324,7 +339,6 @@
     //  restyles a point to the non-hovered state
     function hoverOff(selection) {
 
-        console.log('unhover effect triggered', selection);
         selection.transition()
         .attr('r', function(d, i) { return pointScale(d.stayLength); });
 

@@ -10,7 +10,7 @@
 
     //  the controller for the sample page; exchanges point selection data with
     //  the TravelerPointsMini selection controller
-    module.controller('SamplePageController', function($scope, $http, $compile, $log, MiniMapService) {
+    module.controller('SamplePageController', function($scope, $http, $compile, $log, $interval, MiniMapService) {
 
         var API_URL = 'https://grandtour.herokuapp.com/api/entries/';
 
@@ -34,6 +34,8 @@
                 var wrapperElement = angular.element(document.getElementById('minimap'));
                 wrapperElement.append(miniMapElement);
 
+                doInitialAnimation($scope.travels);
+
 
             }).catch(function() {
 
@@ -48,16 +50,22 @@
 
         $scope.miniMapShared = MiniMapService.miniMapShared;
 
-        // $scope.$watch('miniMapShared', function(newValue) {
+        //  Hovers over every element.
+        function doInitialAnimation(travels) {
 
-        //     if ($scope.miniMapShared.travels) for (var i = 0; i < $scope.miniMapShared.travels.length; i++) {
+            var i = 0;
 
-        //         var hovered = $scope.miniMapShared.travels[i].hovered;
-        //         console.log('from samplepage: travel ' + i + ' ' + (hovered ? 'hovered' : 'unhovered'));
+            $interval(next, 150, travels.length + 1);
 
-        //     }
+            function next() {
 
-        // }, true);
+                console.log(i);
+                if (i > 0) travels[i - 1].hovered = false;
+                if (i < travels.length) travels[i].hovered = true;
+                i++;
+
+            };
+        }
 
     });
 
