@@ -32,6 +32,7 @@
                 var miniMapElement = $compile(directiveHTML)($scope);
 
                 var wrapperElement = angular.element(document.getElementById('minimap'));
+                wrapperElement[0].innerHTML = '';
                 wrapperElement.append(miniMapElement);
 
                 doInitialAnimation($scope.travels);
