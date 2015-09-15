@@ -213,9 +213,8 @@
         .attr('cx', function(d) { return d.xy[0]; })
         .attr('cy', function(d) { return d.xy[1]; })
         .attr('r', TARGET_RADIUS)
-        .style('stroke', 'none')
-        .style('fill', 'none');
-
+        .style('stroke', 'rgba(0,0,0,0)')
+        .style('fill', 'rgba(0,0,0,0)');
 
         // //  perform initial point animation
         // points.transition()
@@ -229,7 +228,7 @@
         //  update the visualization and shared data service on point click
         targets.on('click', function(_, i) {
 
-            var d = travels[i];
+            var d = uniqueDestinations[i];
 
             d.clicked = !d.clicked;
 
@@ -241,8 +240,8 @@
 
             scope.$apply();
 
-            if (d.clicked) clickOn(d3.select(this));
-            else clickOff(d3.select(this));
+            if (d.clicked) clickOn(d3.select(points[0][i]));
+            else clickOff(d3.select(points[0][i]));
 
         });
 
@@ -250,7 +249,7 @@
         //  update the visualization and the shared data service on hover
         targets.on('mouseenter', function(_, i) {
 
-            var d = travels[i];
+            var d = uniqueDestinations[i];
 
             d.hovered = true;
 
@@ -261,14 +260,14 @@
             };
 
             scope.$apply();
-            hoverOn(d3.select(this));
+            hoverOn(d3.select(points[0][i]));
 
         });
 
         //  update the visualization and the shared data service on hover end
         targets.on('mouseleave', function(_, i) {
 
-            var d = travels[i];
+            var d = uniqueDestinations[i];
 
             d.hovered = false;
 
@@ -279,7 +278,7 @@
             };
 
             scope.$apply();
-            hoverOff(d3.select(this));
+            hoverOff(d3.select(points[0][i]));
 
         });
     };

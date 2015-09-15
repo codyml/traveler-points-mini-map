@@ -61,7 +61,6 @@
 
             function next() {
 
-                console.log(i);
                 if (i > 0) travels[i - 1].hovered = false;
                 if (i < travels.length) travels[i].hovered = true;
                 i++;
