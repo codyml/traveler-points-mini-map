@@ -36,6 +36,8 @@
 
                 doInitialAnimation($scope.travels);
 
+                $scope.reanimate = doInitialAnimation;
+
 
             }).catch(function() {
 

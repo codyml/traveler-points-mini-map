@@ -73,6 +73,10 @@ span.ng-binding {
 
 }
 
+button {
+    width: 100%;
+}
+
 path {
 
     fill: none;
