@@ -217,28 +217,28 @@
             });
         }
 
-        key = canvas.selectAll('circle .key')
-        .data(keyData)
-        .enter()
-        .append('circle')
-        .classed('key', true)
-        .attr('cx', MAP_WIDTH - MAX_POINT_RADIUS)
-        .attr('cy', function(d, i) {
+        // key = canvas.selectAll('circle .key')
+        // .data(keyData)
+        // .enter()
+        // .append('circle')
+        // .classed('key', true)
+        // .attr('cx', MAP_WIDTH - MAX_POINT_RADIUS)
+        // .attr('cy', function(d, i) {
 
-            var cy = SPACE_BETWEEN_KEY_POINTS + keyData[0].radius;
-            for (var j = 1; j <= i; j++) {
+        //     var cy = SPACE_BETWEEN_KEY_POINTS + keyData[0].radius;
+        //     for (var j = 1; j <= i; j++) {
 
-                cy += keyData[j - 1].radius;
-                cy += SPACE_BETWEEN_KEY_POINTS;
-                cy += keyData[j].radius;
+        //         cy += keyData[j - 1].radius;
+        //         cy += SPACE_BETWEEN_KEY_POINTS;
+        //         cy += keyData[j].radius;
 
-            }
-            return cy;
+        //     }
+        //     return cy;
 
-        })
-        .attr('r', function(d) { return d.radius; })
-        .style('fill', CLICKED_COLOR)
-        .style('stroke', CLICKED_COLOR);
+        // })
+        // .attr('r', function(d) { return d.radius; })
+        // .style('fill', CLICKED_COLOR)
+        // .style('stroke', CLICKED_COLOR);
 
 
         //  create point elements
@@ -397,7 +397,9 @@
         var labelElement = d3.select(labels[0][index]);
 
         pointElement.transition()
-        .attr('r', function(d) { return pointScale(d.stayLength) + HOVER_SIZE_INCREASE; });
+        .attr('r', function(d) { return pointScale(d.stayLength) + HOVER_SIZE_INCREASE; })
+        .style('fill', CLICKED_COLOR)
+        .style('stroke', CLICKED_COLOR);
 
         targetElement.moveToFront();
 
@@ -412,7 +414,9 @@
         var labelElement = d3.select(labels[0][index]);
 
         pointElement.transition()
-        .attr('r', function(d) { return pointScale(d.stayLength); });
+        .attr('r', function(d) { return pointScale(d.stayLength); })
+        .style('fill', UNCLICKED_COLOR)
+        .style('stroke', UNCLICKED_COLOR);
 
         labelElement.classed('hidden', true);
 
@@ -423,20 +427,12 @@
 
         var pointElement = d3.select(points[0][index]);
 
-        pointElement.transition()
-        .style('fill', CLICKED_COLOR)
-        .style('stroke', CLICKED_COLOR);
-
     };
 
     //  restyles a point to the unclicked state
     function clickOff(index) {
 
         var pointElement = d3.select(points[0][index]);
-
-        pointElement.transition()
-        .style('fill', UNCLICKED_COLOR)
-        .style('stroke', UNCLICKED_COLOR);
 
     };
 

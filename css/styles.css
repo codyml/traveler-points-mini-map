@@ -57,19 +57,17 @@ span.ng-binding {
 
 .minimap-clicked {
 
-    background-color: #ccf;
 
 }
 
 .minimap-hovered {
 
-    background-color: #ccc;
+    background-color: #ccf;
 
 }
 
 .minimap-clicked.minimap-hovered {
 
-    background-color: #bbc;
 
 }
 
