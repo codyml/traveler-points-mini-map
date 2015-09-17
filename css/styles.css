@@ -83,3 +83,12 @@ path {
     stroke: #bbb;
 
 }
+
+text {
+
+    font-family: 'Lato', sans-serif;
+    fill: #888;
+    stroke: #fff;
+    stroke-width: .5px;
+
+}

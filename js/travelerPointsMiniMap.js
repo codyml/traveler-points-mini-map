@@ -90,7 +90,7 @@
     var MIN_POINT_RADIUS = 1;
     var MAX_POINT_RADIUS = 15;
     var HOVER_SIZE_INCREASE = 5;
-    var TARGET_RADIUS = MAX_POINT_RADIUS + HOVER_SIZE_INCREASE;
+    var TEXT_MARGIN_TOP = 5;
     var ONE_DAY_MS = 1000 * 60 * 60 * 24;
 
     //  This value was calculated by averaging the length of every traveler's
@@ -102,7 +102,7 @@
     var ANIMATION_DELAY = 150;
 
     //  Instance variables
-    var canvas, projection, uniqueDestinations, pointScale, key, points, targets;
+    var canvas, projection, uniqueDestinations, pointScale, key, points, targets, labels;
 
 
     //  BringToFront function
@@ -253,7 +253,7 @@
         .style('stroke', UNCLICKED_COLOR)
         .style('fill', UNCLICKED_COLOR)
 
-        //  create point hover and click targets
+        //  create hover and click targets
         targets = canvas.selectAll('circle .target')
         .data(uniqueDestinations)
         .enter()
@@ -261,18 +261,31 @@
         .classed('target', true)
         .attr('cx', function(d) { return d.xy[0]; })
         .attr('cy', function(d) { return d.xy[1]; })
-        .attr('r', TARGET_RADIUS)
+        .attr('r', function(d) { return pointScale(d.stayLength) + HOVER_SIZE_INCREASE; })
         .style('stroke', 'rgba(0,0,0,0)')
         .style('fill', 'rgba(0,0,0,0)');
 
-        // //  perform initial point animation
-        // points.transition()
-        // .attr('r', MAX_POINT_RADIUS)
-        // .delay(function(d, i) { return ANIMATION_DELAY * i * 2; })
-        // .transition()
-        // .attr('r', function(d) { return pointScale(d.stayLength); })
-        // .delay(function(d, i) { return ANIMATION_DELAY * (i + 1) * 2; });
+        //  create labels
+        labels = canvas.selectAll('text')
+        .data(uniqueDestinations)
+        .enter()
+        .append('text')
+        .html(function(d) { return d.place; })
+        .attr('x', function(d) { return d.xy[0]; })
+        .attr('y', function(d) { return d.xy[1] + pointScale(d.stayLength) + HOVER_SIZE_INCREASE + TEXT_MARGIN_TOP; })
+        .attr('font-size', '14')
+        .attr('text-anchor', 'middle')
+        .attr('dominant-baseline', 'hanging')
+        .classed({ hidden: true });
 
+        //  make label unstick if clicked
+        targets.on('click', function(d, i) {
+
+            var element = d3.select(labels[0][i]);
+            if (element.classed('clicked')) {
+                element.classed('clicked', false);
+            }
+        });
 
         //  update the visualization and shared data service on point click
         targets.on('click', function(_, i) {
@@ -381,11 +394,14 @@
 
         var pointElement = d3.select(points[0][index]);
         var targetElement = d3.select(targets[0][index]);
+        var labelElement = d3.select(labels[0][index]);
 
         pointElement.transition()
-        .attr('r', function(d) { return pointScale(d.stayLength) + HOVER_SIZE_INCREASE; });;
+        .attr('r', function(d) { return pointScale(d.stayLength) + HOVER_SIZE_INCREASE; });
 
         targetElement.moveToFront();
+
+        labelElement.classed('hidden', false);
 
     };
 
@@ -393,9 +409,12 @@
     function hoverOff(index) {
 
         var pointElement = d3.select(points[0][index]);
+        var labelElement = d3.select(labels[0][index]);
 
         pointElement.transition()
         .attr('r', function(d) { return pointScale(d.stayLength); });
+
+        labelElement.classed('hidden', true);
 
     };
 
@@ -446,6 +465,9 @@
                         current.travelEndMonth,
                         current.travelEndYear);
 
+            //  fix because some date ranges are negative from bad data
+            var adjustedStayLength = Math.abs(slo.exact ? slo.exact : slo.guess);
+
 
             var matching = uniqueDestinations.filter(function(element) {
                 return element.place === current.place;
@@ -457,7 +479,7 @@
 
                     place: current.place,
                     visits: 1,
-                    stayLength: slo.exact ? slo.exact : slo.guess,
+                    stayLength: adjustedStayLength,
                     xy: projection([current.longitude, current.latitude]),
                     sourceTravels: [current],
                     hovered: false,
@@ -470,7 +492,7 @@
             } else {
 
                 matching[0].visits++;
-                matching[0].stayLength += slo.exact ? slo.exact : slo.guess;
+                matching[0].stayLength += adjustedStayLength;
                 matching[0].sourceTravels.push(current);
 
             }
