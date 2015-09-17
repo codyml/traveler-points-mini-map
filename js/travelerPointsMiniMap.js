@@ -138,7 +138,7 @@
         //  download the basemap data and draw path
         d3.json('italy_outline.json', function(error, data) {
 
-            canvas.append('path')
+            canvas.insert('path', 'svg :first-child')
             .datum(data)
             .attr('d', path)
             .classed('basemap', true);
