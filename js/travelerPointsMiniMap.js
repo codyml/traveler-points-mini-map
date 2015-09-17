@@ -87,8 +87,30 @@
     var BASEMAP_CENTER = [12.75, 42.05];
     var BASEMAP_SCALE = 1000;
 
+    var MIN_POINT_RADIUS = 1;
+    var MAX_POINT_RADIUS = 15;
+    var HOVER_SIZE_INCREASE = 5;
+    var TARGET_RADIUS = MAX_POINT_RADIUS + HOVER_SIZE_INCREASE;
+    var ONE_DAY_MS = 1000 * 60 * 60 * 24;
+
+    //  This value was calculated by averaging the length of every traveler's
+    //  visit to any destination that was exactly defined to the day.
+    var AVG_STAY_DAYS = 26;
+
+    var CLICKED_COLOR = '#88f';
+    var UNCLICKED_COLOR = '#888';
+    var ANIMATION_DELAY = 150;
+
     //  Instance variables
-    var canvas, projection;
+    var canvas, projection, uniqueDestinations, pointScale, key, points, targets;
+
+
+    //  BringToFront function
+    var moveToFront = d3.selection.prototype.moveToFront = function() {
+        return this.each(function() {
+            this.parentNode.appendChild(this);
+        });
+    };
 
 
     //  sets up the visualization canvas
@@ -147,24 +169,6 @@
 
 
 // ------------------ Visualization Function ------------------ //
-
-    //  Constants
-    var MIN_POINT_RADIUS = 1;
-    var MAX_POINT_RADIUS = 15;
-    var TARGET_RADIUS = 15;
-    var ONE_DAY_MS = 1000 * 60 * 60 * 24;
-
-    //  This value was calculated by averaging the length of every traveler's
-    //  visit to any destination that was exactly defined to the day.
-    var AVG_STAY_DAYS = 26;
-
-    var CLICKED_COLOR = '#88f';
-    var UNCLICKED_COLOR = '#888';
-    var ANIMATION_DELAY = 150;
-
-    //  Instance variables
-    var uniqueDestinations, pointScale, key, points, targets;
-
 
     /*
     *   Function: drawDestinationPoints
@@ -285,8 +289,8 @@
 
             scope.$apply();
 
-            if (d.clicked) clickOn(d3.select(points[0][i]));
-            else clickOff(d3.select(points[0][i]));
+            if (d.clicked) clickOn(d3.select(i));
+            else clickOff(d3.select(i));
 
         });
 
@@ -305,7 +309,7 @@
             };
 
             scope.$apply();
-            hoverOn(d3.select(points[0][i]));
+            hoverOn(d3.select(i));
 
         });
 
@@ -323,7 +327,7 @@
             };
 
             scope.$apply();
-            hoverOff(d3.select(points[0][i]));
+            hoverOff(d3.select(i));
 
         });
     };
@@ -354,16 +358,16 @@
             if (hovered !== d.hovered) {
 
                 d.hovered = hovered;
-                if (hovered) hoverOn(d3.select(this));
-                else hoverOff(d3.select(this));
+                if (hovered) hoverOn(i);
+                else hoverOff(i);
 
             }
 
             if (clicked !== d.clicked) {
 
                 d.clicked = clicked;
-                if (clicked) clickOn(d3.select(this))
-                else clickOff(d3.select(this));
+                if (clicked) clickOn(i)
+                else clickOff(i);
 
             }
 
@@ -373,34 +377,45 @@
 
 
     //  restyles a point to the hovered state
-    function hoverOn(selection) {
+    function hoverOn(index) {
 
-        selection.transition()
-        .attr('r', MAX_POINT_RADIUS);
+        var pointElement = d3.select(points[0][index]);
+        var targetElement = d3.select(targets[0][index]);
+
+        pointElement.transition()
+        .attr('r', function(d) { return pointScale(d.stayLength) + HOVER_SIZE_INCREASE; });;
+
+        targetElement.moveToFront();
 
     };
 
     //  restyles a point to the non-hovered state
-    function hoverOff(selection) {
+    function hoverOff(index) {
 
-        selection.transition()
-        .attr('r', function(d, i) { return pointScale(d.stayLength); });
+        var pointElement = d3.select(points[0][index]);
+
+        pointElement.transition()
+        .attr('r', function(d) { return pointScale(d.stayLength); });
 
     };
 
     //  restyles a point to the clicked state
-    function clickOn(selection) {
+    function clickOn(index) {
 
-        selection.transition()
+        var pointElement = d3.select(points[0][index]);
+
+        pointElement.transition()
         .style('fill', CLICKED_COLOR)
         .style('stroke', CLICKED_COLOR);
 
     };
 
     //  restyles a point to the unclicked state
-    function clickOff(selection) {
+    function clickOff(index) {
 
-        selection.transition()
+        var pointElement = d3.select(points[0][index]);
+
+        pointElement.transition()
         .style('fill', UNCLICKED_COLOR)
         .style('stroke', UNCLICKED_COLOR);
 
