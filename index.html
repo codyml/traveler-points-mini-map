@@ -34,7 +34,7 @@
     <form>
       <div class="form-group">
         <label for="traveler-id">Enter a traveler ID between 0 and 5293</label>
-        <input id="traveler-id" class="form-control" type="text" placeholder="{{ placeholder }}" ng-model="travelerID">
+        <input id="traveler-id" class="form-control" type="text" placeholder="{{ placeholder }}" ng-model="travelerID" autocomplete="off">
       </div>
       <button class="btn btn-primary" type="submit" ng-click="getTraveler(travelerID)">Explore Traveler</button>
     </form>

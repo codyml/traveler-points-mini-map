@@ -163,7 +163,7 @@
     var ANIMATION_DELAY = 150;
 
     //  Instance variables
-    var totalStayLengths, uniqueDestinations, pointScale, points, targets;
+    var uniqueDestinations, pointScale, key, points, targets;
 
 
     /*
@@ -179,7 +179,7 @@
 
 
         //  reduce stayLengths to a total
-        totalStayLengths = uniqueDestinations.reduce(function(accum, next) {
+        var totalStayLengths = uniqueDestinations.reduce(function(accum, next) {
 
             return accum + next.stayLength;
 
@@ -190,6 +190,51 @@
         pointScale = d3.scale.linear()
         .domain([0, totalStayLengths])
         .range([MIN_POINT_RADIUS, MAX_POINT_RADIUS]);
+
+
+        //  draw the key
+        var keyScale = d3.scale.linear()
+        .range([MIN_POINT_RADIUS, MAX_POINT_RADIUS]);
+
+        var keyLabelScale = d3.scale.linear()
+        .range([0, totalStayLengths]);
+
+        var SPACE_BETWEEN_KEY_POINTS = 5;
+
+        var keyData = [];
+        var keyIntervals = 5;
+        for (var i = keyIntervals; i > -1; i--) {
+
+            keyData.push({
+
+                radius: keyScale(i / keyIntervals),
+                label: keyLabelScale(i / keyIntervals),
+
+            });
+        }
+
+        key = canvas.selectAll('circle .key')
+        .data(keyData)
+        .enter()
+        .append('circle')
+        .classed('key', true)
+        .attr('cx', MAP_WIDTH - MAX_POINT_RADIUS)
+        .attr('cy', function(d, i) {
+
+            var cy = SPACE_BETWEEN_KEY_POINTS + keyData[0].radius;
+            for (var j = 1; j <= i; j++) {
+
+                cy += keyData[j - 1].radius;
+                cy += SPACE_BETWEEN_KEY_POINTS;
+                cy += keyData[j].radius;
+
+            }
+            return cy;
+
+        })
+        .attr('r', function(d) { return d.radius; })
+        .style('fill', CLICKED_COLOR)
+        .style('stroke', CLICKED_COLOR);
 
 
         //  create point elements
