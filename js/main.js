@@ -13,6 +13,7 @@
     module.controller('SamplePageController', function($scope, $http, $compile, $log, $interval, MiniMapService) {
 
         var API_URL = 'https://grandtour.herokuapp.com/api/entries/';
+        var ANIMATION_INTERVAL = 500;
 
         $scope.getTraveler = function(travelerID) {
 
@@ -24,7 +25,7 @@
                 $scope.travels = response.data.entry.travels;
 
                 //  send the list of travels to the shared data service
-                MiniMapService.miniMapShared.travels = (response.data.entry.travels);
+                $scope.miniMapShared.travels = (response.data.entry.travels);
 
                 $scope.placeholder = travelerID;
 
@@ -58,12 +59,12 @@
 
             var i = 0;
 
-            $interval(next, 150, travels.length + 1);
+            $interval(next, ANIMATION_INTERVAL, travels.length + 1);
 
             function next() {
 
-                if (i > 0) travels[i - 1].hovered = false;
-                if (i < travels.length) travels[i].hovered = true;
+                if (i > 0) $scope.miniMapShared.travelUnhovered(travels[i - 1]);
+                if (i < travels.length) $scope.miniMapShared.travelHovered(travels[i]);
                 i++;
 
             };

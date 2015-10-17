@@ -25,6 +25,9 @@
         var miniMapShared = {
 
             travels: null,
+            travelHovered: travelHovered,
+            travelUnhovered: travelUnhovered,
+            travelClicked: travelClicked,
 
         };
 
@@ -53,24 +56,7 @@
             restrict: 'E',
             link: function(scope, element, attrs) {
 
-                setupVisualization(element[0], scope);
-
-                setTimeout(function() {
-
-                    scope.$watch('miniMapShared.travels', function() {
-
-                        if (scope.fullName) refreshVisualization();
-
-                        // if (scope.miniMapShared.travels) for (var i = 0; i < scope.miniMapShared.travels.length; i++) {
-
-                        //     var hovered = scope.miniMapShared.travels[i].hovered;
-                        //     console.log('from minimap: travel ' + i + ' ' + (hovered ? 'hovered' : 'unhovered'));
-
-                        // }
-
-                    }, true);
-
-                }, 0);
+                setupVisualization(element[0], scope.miniMapShared.travels, function() { scope.$apply(); });
 
             },
 
@@ -105,7 +91,7 @@
     var canvas, projection, uniqueDestinations, pointScale, key, points, targets, labels;
 
 
-    //  BringToFront function
+    //  moveToFront function
     var moveToFront = d3.selection.prototype.moveToFront = function() {
         return this.each(function() {
             this.parentNode.appendChild(this);
@@ -114,17 +100,33 @@
 
 
     //  sets up the visualization canvas
-    function setupVisualization(element, scope) {
+    function setupVisualization(element, travels, applyFn) {
 
         canvas = d3.select(element).append('svg').attr('width', MAP_WIDTH).attr('height', MAP_HEIGHT);
 
-        setupBasemap();
-        drawPoints(scope);
+        drawBasemap();
+
+        //  check if there are travels
+        var n_travels = travels ? travels.length : 0;
+
+        if (n_travels) {
+
+            //  filter out the points with no location data
+            travelsWithLocation = travels.filter(function(destination) {
+                return destination.latitude ? true : false;
+            });
+
+            uniqueDestinations = findUniqueDestinations(travelsWithLocation);
+            drawDestinationPoints();
+            addListeners(applyFn)
+
+        }
+        
 
     };
 
     //  display the basemap
-    function setupBasemap() {
+    function drawBasemap() {
 
         //  set up mercator projection with map centered and
         //  scaled on region of interest.
@@ -146,27 +148,6 @@
         });
     };
 
-    //  display the mini map visualization.
-    function drawPoints(scope) {
-
-        var travels = scope.miniMapShared.travels
-
-        //  check if there are travels
-        var n_travels = travels ? travels.length : 0;
-
-        if (n_travels) {
-
-            //  filter out the points with no location data
-            travels = travels.filter(function(destination) {
-                return destination.latitude ? true : false;
-            });
-
-            drawDestinationPoints(travels, scope);
-
-        }
-
-    };
-
 
 // ------------------ Visualization Function ------------------ //
 
@@ -176,11 +157,7 @@
     *   Draws a point with radius POINT_RADIUS at the location of each
     *   destination, animating its appearance.
     */
-    function drawDestinationPoints(travels, scope) {
-
-        //  create an array of unique travel travels
-        uniqueDestinations = findUniqueDestinations(travels);
-
+    function drawDestinationPoints() {
 
         //  reduce stayLengths to a total
         var totalStayLengths = uniqueDestinations.reduce(function(accum, next) {
@@ -189,57 +166,10 @@
 
         }, 0);
 
-
         //  calculate the point scale
         pointScale = d3.scale.linear()
         .domain([0, totalStayLengths])
         .range([MIN_POINT_RADIUS, MAX_POINT_RADIUS]);
-
-
-        //  draw the key
-        var keyScale = d3.scale.linear()
-        .range([MIN_POINT_RADIUS, MAX_POINT_RADIUS]);
-
-        var keyLabelScale = d3.scale.linear()
-        .range([0, totalStayLengths]);
-
-        var SPACE_BETWEEN_KEY_POINTS = 5;
-
-        var keyData = [];
-        var keyIntervals = 5;
-        for (var i = keyIntervals; i > -1; i--) {
-
-            keyData.push({
-
-                radius: keyScale(i / keyIntervals),
-                label: keyLabelScale(i / keyIntervals),
-
-            });
-        }
-
-        // key = canvas.selectAll('circle .key')
-        // .data(keyData)
-        // .enter()
-        // .append('circle')
-        // .classed('key', true)
-        // .attr('cx', MAP_WIDTH - MAX_POINT_RADIUS)
-        // .attr('cy', function(d, i) {
-
-        //     var cy = SPACE_BETWEEN_KEY_POINTS + keyData[0].radius;
-        //     for (var j = 1; j <= i; j++) {
-
-        //         cy += keyData[j - 1].radius;
-        //         cy += SPACE_BETWEEN_KEY_POINTS;
-        //         cy += keyData[j].radius;
-
-        //     }
-        //     return cy;
-
-        // })
-        // .attr('r', function(d) { return d.radius; })
-        // .style('fill', CLICKED_COLOR)
-        // .style('stroke', CLICKED_COLOR);
-
 
         //  create point elements
         points = canvas.selectAll('circle .point')
@@ -278,40 +208,13 @@
         .attr('dominant-baseline', 'hanging')
         .classed({ hidden: true });
 
-        //  make label unstick if clicked
-        targets.on('click', function(d, i) {
+    };
 
-            var element = d3.select(labels[0][i]);
-            if (element.classed('clicked')) {
-                element.classed('clicked', false);
-            }
-        });
 
-        //  update the visualization and shared data service on point click
-        targets.on('click', function(_, i) {
-
-            var d = uniqueDestinations[i];
-
-            d.clicked = !d.clicked;
-
-            for (var j = 0; j < d.sourceTravels.length; j++) {
-
-                d.sourceTravels[j].clicked = d.clicked;
-
-            };
-
-            scope.$apply();
-
-            if (d.clicked) clickOn(d3.select(i));
-            else clickOff(d3.select(i));
-
-        });
-
+    function addListeners(applyFn) {
 
         //  update the visualization and the shared data service on hover
-        targets.on('mouseenter', function(_, i) {
-
-            var d = uniqueDestinations[i];
+        targets.on('mouseenter', function(d, i) {
 
             d.hovered = true;
 
@@ -321,15 +224,14 @@
 
             };
 
-            scope.$apply();
-            hoverOn(d3.select(i));
+            applyFn();
+
+            hoverOn(i);
 
         });
 
         //  update the visualization and the shared data service on hover end
-        targets.on('mouseleave', function(_, i) {
-
-            var d = uniqueDestinations[i];
+        targets.on('mouseleave', function(d, i) {
 
             d.hovered = false;
 
@@ -339,52 +241,52 @@
 
             };
 
-            scope.$apply();
-            hoverOff(d3.select(i));
+            applyFn();
+
+            hoverOff(i);
 
         });
     };
 
 
     /*
-    *   Function: refreshVisualization
+    *   Function: travelHovered
     *   ------------------------------
-    *   Called when an element is rolled over or clicked on in the travel list
+    *   Called when an element is hovered over in the travel list
     *   to refresh the D3 visualization.
     */
-    function refreshVisualization() {
+    function travelHovered(travel) {
 
-        points.each(function(d, i) {
+        travel.hovered = true;
+        var index = uniqueDestinations.indexOf(travel.uniqueDestination);
+        hoverOn(index);
 
-            var hovered = false;
-            var clicked = false;
+    };
 
-            for (var j = 0; j < d.sourceTravels.length; j++) {
+    /*
+    *   Function: travelUnhovered
+    *   ------------------------------
+    *   Called when an element is unhovered over in the travel list
+    *   to refresh the D3 visualization.
+    */
+    function travelUnhovered(travel) {
 
-                var travel = d.sourceTravels[j];
+        travel.hovered = false;
+        var index = uniqueDestinations.indexOf(travel.uniqueDestination);
+        hoverOff(index);
 
-                if (travel.hovered) hovered = true;
+    };
 
-                if (travel.clicked) clicked = true;
-            }
 
-            if (hovered !== d.hovered) {
+    /*
+    *   Function: travelClicked
+    *   ------------------------------
+    *   Called when an element is unhovered over in the travel list
+    *   to refresh the D3 visualization.
+    */
+    function travelClicked(travel) {
 
-                d.hovered = hovered;
-                if (hovered) hoverOn(i);
-                else hoverOff(i);
-
-            }
-
-            if (clicked !== d.clicked) {
-
-                d.clicked = clicked;
-                if (clicked) clickOn(i)
-                else clickOff(i);
-
-            }
-
-        });
+        console.log('travel clicked!');
 
     };
 
@@ -422,20 +324,6 @@
 
     };
 
-    //  restyles a point to the clicked state
-    function clickOn(index) {
-
-        var pointElement = d3.select(points[0][index]);
-
-    };
-
-    //  restyles a point to the unclicked state
-    function clickOff(index) {
-
-        var pointElement = d3.select(points[0][index]);
-
-    };
-
 
 // ------------------ Utility Functions ------------------ //
 
@@ -452,46 +340,51 @@
 
         for (var i = 0; i < travels.length; i++) {
 
-            var current = travels[i];
+            var travel = travels[i];
 
-            var slo = guessStayLength(current.travelStartDay,
-                        current.travelStartMonth,
-                        current.travelStartYear,
-                        current.travelEndDay,
-                        current.travelEndMonth,
-                        current.travelEndYear);
+            var slo = guessStayLength(travel.travelStartDay,
+                        travel.travelStartMonth,
+                        travel.travelStartYear,
+                        travel.travelEndDay,
+                        travel.travelEndMonth,
+                        travel.travelEndYear);
 
             //  fix because some date ranges are negative from bad data
             var adjustedStayLength = Math.abs(slo.exact ? slo.exact : slo.guess);
 
 
-            var matching = uniqueDestinations.filter(function(element) {
-                return element.place === current.place;
+            var filtered = uniqueDestinations.filter(function(element) {
+                return element.place === travel.place;
             });
 
-            if (!matching[0]) {
+            matching = filtered[0];
+
+            if (!matching) {
 
                 var newUniqueDestination = {
 
-                    place: current.place,
+                    place: travel.place,
                     visits: 1,
                     stayLength: adjustedStayLength,
-                    xy: projection([current.longitude, current.latitude]),
-                    sourceTravels: [current],
+                    xy: projection([travel.longitude, travel.latitude]),
+                    sourceTravels: [travel],
                     hovered: false,
                     clicked: false,
 
                 }
 
                 uniqueDestinations.push(newUniqueDestination);
+                matching = newUniqueDestination;
 
             } else {
 
-                matching[0].visits++;
-                matching[0].stayLength += adjustedStayLength;
-                matching[0].sourceTravels.push(current);
+                matching.visits++;
+                matching.stayLength += adjustedStayLength;
+                matching.sourceTravels.push(travel);
 
             }
+
+            travel.uniqueDestination = matching;
 
         };
 

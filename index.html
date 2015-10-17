@@ -64,7 +64,7 @@
         </thead>
 
         <tbody>
-          <tr ng-repeat="travel in miniMapShared.travels" ng-mouseenter="travel.hovered = true" ng-mouseleave="travel.hovered = false" ng-click="travel.clicked = !travel.clicked" ng-class="{ 'minimap-clicked': travel.clicked, 'minimap-hovered': travel.hovered }">
+          <tr ng-repeat="travel in miniMapShared.travels" ng-mouseenter="miniMapShared.travelHovered(travel)" ng-mouseleave="miniMapShared.travelUnhovered(travel)" ng-click="miniMapShared.travelClicked(travel)" ng-class="{ 'minimap-clicked': travel.clicked, 'minimap-hovered': travel.hovered }">
             <td>
               <span>{{ travel.place }}</span>
             </td>
@@ -97,8 +97,8 @@
     <script src="js/lib/d3.min.js"></script>
 
     <!-- Custom scripts -->
-    <script src="js/main.js"></script>
     <script src="js/travelerPointsMiniMap.js"></script>
+    <script src="js/main.js"></script>
 
   </body>
 </html>
